@@ -1,16 +1,24 @@
 package com.zhaojun.sell.controller;
 
+import com.zhaojun.sell.domain.ProductCategory;
+import com.zhaojun.sell.domain.ProductInfo;
+import com.zhaojun.sell.service.ProductCategoryService;
+import com.zhaojun.sell.service.ProductInfoService;
+import com.zhaojun.sell.service.impl.ProductInfoServiceImpl;
+import com.zhaojun.sell.utils.ResultVOUtil;
 import com.zhaojun.sell.vo.ProductInfoVO;
 import com.zhaojun.sell.vo.ProductVO;
 import com.zhaojun.sell.vo.ResultVO;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 买家商品
@@ -21,22 +29,43 @@ import java.util.List;
 @RequestMapping("/buyer/product")
 public class BuyerProductController {
 
+    @Autowired
+    private ProductInfoService productInfoService;
+
+    @Autowired
+    private ProductCategoryService productCategoryService;
+
     @GetMapping("/list")
     public ResultVO list(){
-        ResultVO resultVO = new ResultVO();
-        resultVO.setCode(200);
-        resultVO.setMessage("成功");
 
-        ProductInfoVO productInfoVO = new ProductInfoVO();
+        //查询所有上架商品
+        List<ProductInfo> productInfoList = productInfoService.findUpAll();
 
-        List<ProductInfoVO> productInfoVOList = Arrays.asList(productInfoVO);
+        //查询所有商品类目 并将类目类型放入集合中
+        List<Integer> categoryTypeList = productInfoList.stream()
+                .map(e -> e.getCategoryType())
+                .collect(Collectors.toList());
+        //根据类目编号集合查询类目
+        List<ProductCategory> categoryList = productCategoryService.findByCategoryTypeIn(categoryTypeList);
 
-        ProductVO productVO = new ProductVO();
+        List<ProductVO> productVOList = new ArrayList<>();
 
-        productVO.setProductInfoVOList(productInfoVOList);
+        //组装productVoList
+        for (ProductCategory category: categoryList) {
+            ProductVO productVO = new ProductVO();
+            productVO.setCategoryName(category.getCategoryName());
+            productVO.setCategoryType(category.getCategoryType());
 
-        resultVO.setData(productVO);
+            List<ProductInfoVO> productInfoVOList = new ArrayList<>();
+            for (ProductInfo productInfo : productInfoList){
+                ProductInfoVO productInfoVO = new ProductInfoVO();
+                BeanUtils.copyProperties(productInfo,productInfoVO);
+                productInfoVOList.add(productInfoVO);
+            }
+            productVO.setProductInfoVOList(productInfoVOList);
+            productVOList.add(productVO);
+        }
 
-        return resultVO;
+        return ResultVOUtil.success(productVOList);
     }
 }
