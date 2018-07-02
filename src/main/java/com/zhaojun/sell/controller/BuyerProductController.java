@@ -4,7 +4,6 @@ import com.zhaojun.sell.domain.ProductCategory;
 import com.zhaojun.sell.domain.ProductInfo;
 import com.zhaojun.sell.service.ProductCategoryService;
 import com.zhaojun.sell.service.ProductInfoService;
-import com.zhaojun.sell.service.impl.ProductInfoServiceImpl;
 import com.zhaojun.sell.utils.ResultVOUtil;
 import com.zhaojun.sell.vo.ProductInfoVO;
 import com.zhaojun.sell.vo.ProductVO;
@@ -16,7 +15,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
